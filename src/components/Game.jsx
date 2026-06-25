@@ -128,7 +128,10 @@ export default function Game({ room, playerId, onLeave }) {
     return (
       <Screen>
         <PlayerPicker playerName={myName} onConfirm={async (player) => {
-          const theirPick = gs[`pick_${theirKey}`]
+          // Always fetch fresh state first to avoid race condition
+          const { data: fresh } = await supabase.from('rooms').select('game_state').eq('id', room.id).single()
+          const freshGs = fresh?.game_state || {}
+          const theirPick = freshGs[`pick_${theirKey}`]
           if (theirPick) {
             await patch({ [`pick_${myKey}`]: player, phase: 'writing_clues', timer_end: Date.now() + TIMER_MS })
           } else {
@@ -158,7 +161,10 @@ export default function Game({ room, playerId, onLeave }) {
     return (
       <Screen>
         <ClueEntry playerName={myName} player={myPick} timerDisplay={timerDisplay} onSubmit={async (clues) => {
-          const theirClues = gs[`clues_${theirKey}`]
+          // Always fetch fresh state first to avoid race condition
+          const { data: fresh } = await supabase.from('rooms').select('game_state').eq('id', room.id).single()
+          const freshGs = fresh?.game_state || {}
+          const theirClues = freshGs[`clues_${theirKey}`]
           if (theirClues) {
             await patch({ [`clues_${myKey}`]: clues, phase: 'guessing_p1', timer_end: Date.now() + TIMER_MS, guesses_left_p1: 2, guesses_left_p2: 2, questions_left_p1: 3, questions_left_p2: 3, questions_p1: [], questions_p2: [], revealed_p1: 0, revealed_p2: 0 })
           } else {
