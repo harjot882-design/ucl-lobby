@@ -1,14 +1,22 @@
 import { useState } from 'react'
-import Lobby from './components/Lobby.jsx'
-import Game from './components/Game.jsx'
-import './styles.css'
+import Lobby from './components/Lobby'
+import Game from './components/Game'
 
 export default function App() {
   const [session, setSession] = useState(null)
-  // session = { roomCode, playerSlot, playerName }
+  // session = { room, playerId }
 
-  if (session) {
-    return <Game session={session} onLeave={() => setSession(null)} />
-  }
-  return <Lobby onJoin={setSession} />
+  return (
+    <div className="app-root">
+      <div className="hex-bg" />
+      {!session
+        ? <Lobby onJoin={(room, playerId) => setSession({ room, playerId })} />
+        : <Game
+            room={session.room}
+            playerId={session.playerId}
+            onLeave={() => setSession(null)}
+          />
+      }
+    </div>
+  )
 }
