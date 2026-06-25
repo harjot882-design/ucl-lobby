@@ -1,72 +1,144 @@
 export function autoAnswer(q, p) {
+  const ql = q.toLowerCase()
   const nation = p.nation.toLowerCase()
   const pos = p.pos
   const clubs = p.clubs_history.map(c => c.toLowerCase())
+  const curClub = p.club.toLowerCase()
 
-  if (/french|from france/.test(q)) return nation === 'france'
-  if (/spanish|from spain/.test(q)) return nation === 'spain'
-  if (/portuguese|from portugal/.test(q)) return nation === 'portugal'
-  if (/german|from germany/.test(q)) return nation === 'germany'
-  if (/brazilian|from brazil/.test(q)) return nation === 'brazil'
-  if (/argentin(e|ian)|from argentina/.test(q)) return nation === 'argentina'
-  if (/english|from england/.test(q)) return nation === 'england'
-  if (/italian|from italy/.test(q)) return nation === 'italy'
-  if (/dutch|from (the )?netherlands/.test(q)) return nation === 'netherlands'
-  if (/belgian|from belgium/.test(q)) return nation === 'belgium'
-  if (/moroccan|from morocco/.test(q)) return nation === 'morocco'
-  if (/senegalese|from senegal/.test(q)) return nation === 'senegal'
-  if (/egyptian|from egypt/.test(q)) return nation === 'egypt'
-  if (/croat(ian)?|from croatia/.test(q)) return nation === 'croatia'
-  if (/norwegian|from norway/.test(q)) return nation === 'norway'
-  if (/polish|from poland/.test(q)) return nation === 'poland'
-  if (/swedish|from sweden/.test(q)) return nation === 'sweden'
-  if (/welsh|from wales/.test(q)) return nation === 'wales'
-  if (/uruguayan|from uruguay/.test(q)) return nation === 'uruguay'
-  if (/chilean|from chile/.test(q)) return nation === 'chile'
-  if (/south korean|from (south )?korea/.test(q)) return nation === 'south korea'
-  if (/nigerian|from nigeria/.test(q)) return nation === 'nigeria'
-  if (/algerian|from algeria/.test(q)) return nation === 'algeria'
-  if (/ivory coast|ivorian/.test(q)) return nation === 'ivory coast'
-  if (/european/.test(q)) return p.continent === 'European'
-  if (/south american/.test(q)) return p.continent === 'South American'
-  if (/african/.test(q)) return p.continent === 'African'
-  if (/asian/.test(q)) return p.continent === 'Asian'
-  if (/forward|striker/.test(q)) return pos === 'FW'
-  if (/midfielder/.test(q)) return pos === 'MF'
-  if (/defender/.test(q)) return pos === 'DF'
-  if (/goalkeeper|goalie/.test(q)) return pos === 'GK'
-  if (/left.foot/.test(q)) return p.foot === 'left'
-  if (/right.foot/.test(q)) return p.foot === 'right'
-  if (/never won|without winning|0 ucl/.test(q)) return p.ucl_wins === 0
-  if (/won.*(ucl|champions league)/.test(q)) return p.ucl_wins > 0
-  if (/more than once|multiple times|more than 1 ucl/.test(q)) return p.ucl_wins > 1
-  if (/more than (twice|2)/.test(q)) return p.ucl_wins > 2
-  if (/won it (3|three) times/.test(q)) return p.ucl_wins === 3
-  if (/still (active|playing)|currently playing/.test(q)) return p.club !== 'Retired'
-  if (/retired/.test(q)) return p.club === 'Retired'
-  if (/real madrid/.test(q)) return clubs.some(c => c.includes('real madrid'))
-  if (/barcelona/.test(q)) return clubs.some(c => c.includes('barcelona'))
-  if (/manchester city/.test(q)) return clubs.some(c => c.includes('manchester city'))
-  if (/manchester united/.test(q)) return clubs.some(c => c.includes('manchester united'))
-  if (/liverpool/.test(q)) return clubs.some(c => c.includes('liverpool'))
-  if (/psg|paris saint.germain/.test(q)) return clubs.some(c => c.includes('psg') || c.includes('paris'))
-  if (/juventus/.test(q)) return clubs.some(c => c.includes('juventus'))
-  if (/bayern/.test(q)) return clubs.some(c => c.includes('bayern'))
-  if (/chelsea/.test(q)) return clubs.some(c => c.includes('chelsea'))
-  if (/arsenal/.test(q)) return clubs.some(c => c.includes('arsenal'))
-  if (/inter milan/.test(q)) return clubs.some(c => c.includes('inter milan'))
-  if (/ac milan/.test(q)) return clubs.some(c => c.includes('ac milan'))
-  if (/atletico/.test(q)) return clubs.some(c => c.includes('atletico'))
-  if (/dortmund|bvb/.test(q)) return clubs.some(c => c.includes('dortmund'))
-  if (/ajax/.test(q)) return clubs.some(c => c.includes('ajax'))
-  if (/benfica/.test(q)) return clubs.some(c => c.includes('benfica'))
-  if (/tottenham|spurs/.test(q)) return clubs.some(c => c.includes('tottenham'))
-  if (/over 50 ucl goals/.test(q)) return p.ucl_goals > 50
-  if (/over 100 ucl apps/.test(q)) return p.ucl_apps > 100
-  if (/born.*(1990s|after 1989)/.test(q)) return p.born >= 1990 && p.born < 2000
-  if (/born.*(2000s|after 1999)/.test(q)) return p.born >= 2000
-  if (/born before 1990/.test(q)) return p.born < 1990
-  if (/under 25/.test(q)) return (2025 - p.born) <= 25
-  if (/over 30/.test(q)) return (2025 - p.born) >= 30
+  // Nationality
+  const nationMap = {
+    'french|from france': 'france',
+    'spanish|from spain': 'spain',
+    'portuguese|from portugal': 'portugal',
+    'german|from germany': 'germany',
+    'brazilian|from brazil': 'brazil',
+    'argentin': 'argentina',
+    'english|from england': 'england',
+    'italian|from italy': 'italy',
+    'dutch|from netherlands|from the netherlands': 'netherlands',
+    'belgian|from belgium': 'belgium',
+    'moroccan|from morocco': 'morocco',
+    'senegalese|from senegal': 'senegal',
+    'egyptian|from egypt': 'egypt',
+    'croatian|from croatia': 'croatia',
+    'norwegian|from norway': 'norway',
+    'polish|from poland': 'poland',
+    'swedish|from sweden': 'sweden',
+    'welsh|from wales': 'wales',
+    'uruguayan|from uruguay': 'uruguay',
+    'chilean|from chile': 'chile',
+    'south korean|from south korea|from korea': 'south korea',
+    'nigerian|from nigeria': 'nigeria',
+    'algerian|from algeria': 'algeria',
+    'ivorian|from ivory coast|from cote d': 'ivory coast',
+    'scottish|from scotland': 'scotland',
+    'austrian|from austria': 'austria',
+    'swiss|from switzerland': 'switzerland',
+  }
+  for (const [pattern, nat] of Object.entries(nationMap)) {
+    if (new RegExp(pattern).test(ql)) return nation === nat
+  }
+
+  // Continent
+  if (/european/.test(ql)) return p.continent === 'European'
+  if (/south american|latin american/.test(ql)) return p.continent === 'South American'
+  if (/african/.test(ql)) return p.continent === 'African'
+  if (/asian/.test(ql)) return p.continent === 'Asian'
+
+  // Position
+  if (/\b(forward|striker|centre.forward|center.forward|cf|st)\b/.test(ql)) return pos === 'FW'
+  if (/\b(midfielder|mid|cm|cam|cdm|central mid|attacking mid|defensive mid)\b/.test(ql)) return pos === 'MF'
+  if (/\b(defender|centre.back|center.back|cb|full.back|fullback|right.back|left.back|rb|lb)\b/.test(ql)) return pos === 'DF'
+  if (/\b(goalkeeper|goalie|keeper|gk)\b/.test(ql)) return pos === 'GK'
+  if (/plays (in )?attack|attacking player/.test(ql)) return pos === 'FW'
+  if (/plays (in )?midfield/.test(ql)) return pos === 'MF'
+  if (/plays (in )?defence|plays (in )?defense/.test(ql)) return pos === 'DF'
+
+  // Foot
+  if (/left.foot(ed)?|prefers? left|stronger left/.test(ql)) return p.foot === 'left'
+  if (/right.foot(ed)?|prefers? right|stronger right/.test(ql)) return p.foot === 'right'
+
+  // UCL wins
+  if (/never won|0 (ucl|champions league) win|hasn.t won|without winning/.test(ql)) return p.ucl_wins === 0
+  if (/won.*(ucl|champions league)|ucl winner|champions league winner/.test(ql)) return p.ucl_wins > 0
+  if (/won it once|won (it|the ucl|the champions league) (once|1 time|one time)/.test(ql)) return p.ucl_wins === 1
+  if (/won it twice|won (it|the ucl|the champions league) (twice|2 times|two times)/.test(ql)) return p.ucl_wins === 2
+  if (/won it (3|three) times/.test(ql)) return p.ucl_wins === 3
+  if (/won it (4|four) times/.test(ql)) return p.ucl_wins === 4
+  if (/won it (5|five) times/.test(ql)) return p.ucl_wins === 5
+  if (/more than (once|1|one) ucl|multiple ucl|more than 1 champions/.test(ql)) return p.ucl_wins > 1
+  if (/more than (twice|2|two) ucl|more than 2 champions/.test(ql)) return p.ucl_wins > 2
+  if (/more than (3|three) ucl/.test(ql)) return p.ucl_wins > 3
+  if (/at least (2|two) ucl/.test(ql)) return p.ucl_wins >= 2
+  if (/at least (3|three) ucl/.test(ql)) return p.ucl_wins >= 3
+
+  // UCL goals
+  if (/over 50 ucl goals|more than 50 (ucl|champions league) goals/.test(ql)) return p.ucl_goals > 50
+  if (/over 100 ucl goals|more than 100 (ucl|champions league) goals/.test(ql)) return p.ucl_goals > 100
+  if (/over 20 ucl goals|more than 20 (ucl|champions league) goals/.test(ql)) return p.ucl_goals > 20
+  if (/scored in (the )?ucl|has ucl goals|ucl goal scorer/.test(ql)) return p.ucl_goals > 0
+
+  // UCL appearances
+  if (/over 100 ucl (apps|appearances)|more than 100/.test(ql)) return p.ucl_apps > 100
+  if (/over 150 ucl (apps|appearances)|more than 150/.test(ql)) return p.ucl_apps > 150
+  if (/over 50 ucl (apps|appearances)|more than 50/.test(ql)) return p.ucl_apps > 50
+
+  // Current status
+  if (/still (active|playing|in football)|currently playing|not retired/.test(ql)) return p.club !== 'Retired'
+  if (/retired|no longer playing/.test(ql)) return p.club === 'Retired'
+  if (/plays in (saudi|saudi arabia|saudi league)/.test(ql)) return ['al nassr','al ittihad','al hilal','al ahli'].some(c => curClub.includes(c))
+  if (/plays in (the )?(premier league|england|epl)/.test(ql)) return ['manchester city','manchester united','liverpool','arsenal','chelsea','tottenham'].some(c => curClub.includes(c))
+  if (/plays in (la liga|spain|spanish league)/.test(ql)) return ['real madrid','barcelona','atletico'].some(c => curClub.includes(c))
+  if (/plays in (ligue 1|france|french league)/.test(ql)) return ['psg','paris'].some(c => curClub.includes(c))
+  if (/plays in (serie a|italy|italian league)/.test(ql)) return ['juventus','ac milan','inter milan','roma','napoli'].some(c => curClub.includes(c))
+  if (/plays in (bundesliga|germany|german league)/.test(ql)) return ['bayern','dortmund'].some(c => curClub.includes(c))
+
+  // Specific clubs (career history)
+  const clubMap = {
+    'real madrid': 'real madrid',
+    'barcelona|barca': 'barcelona',
+    'manchester city|man city': 'manchester city',
+    'manchester united|man united|man utd': 'manchester united',
+    'liverpool': 'liverpool',
+    'psg|paris saint.germain|paris sg': 'psg',
+    'juventus|juve': 'juventus',
+    'bayern|fc bayern': 'bayern munich',
+    'chelsea': 'chelsea',
+    'arsenal': 'arsenal',
+    'inter milan|inter fc|internazionale': 'inter milan',
+    'ac milan|milan(?! city)': 'ac milan',
+    'atletico madrid|atletico': 'atletico',
+    'dortmund|bvb|borussia dortmund': 'dortmund',
+    'ajax': 'ajax',
+    'benfica': 'benfica',
+    'tottenham|spurs': 'tottenham',
+    'porto': 'porto',
+    'monaco': 'monaco',
+    'sevilla': 'sevilla',
+    'napoli': 'napoli',
+    'roma': 'roma',
+  }
+  for (const [pattern, clubKey] of Object.entries(clubMap)) {
+    if (new RegExp(`(ever played for|played at|been at|at|for) (${pattern})|${pattern} (player|career)`).test(ql)) {
+      return clubs.some(c => c.includes(clubKey))
+    }
+  }
+
+  // Age
+  const currentYear = 2025
+  if (/under 25|younger than 25|25 or under/.test(ql)) return (currentYear - p.born) < 25
+  if (/under 30|younger than 30|30 or under/.test(ql)) return (currentYear - p.born) < 30
+  if (/over 30|older than 30|30 or older/.test(ql)) return (currentYear - p.born) >= 30
+  if (/over 35|older than 35|35 or older/.test(ql)) return (currentYear - p.born) >= 35
+  if (/born (in the )?1980s/.test(ql)) return p.born >= 1980 && p.born < 1990
+  if (/born (in the )?1990s/.test(ql)) return p.born >= 1990 && p.born < 2000
+  if (/born (in the )?2000s/.test(ql)) return p.born >= 2000
+  if (/born before 1985/.test(ql)) return p.born < 1985
+  if (/born before 1990/.test(ql)) return p.born < 1990
+  if (/born before 1995/.test(ql)) return p.born < 1995
+  if (/born after 1995/.test(ql)) return p.born > 1995
+  if (/born after 2000/.test(ql)) return p.born > 2000
+
+  // Fallback: unknown question
   return false
 }

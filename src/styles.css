@@ -405,3 +405,21 @@ body {
 .result-badge.correct { background: #0d3c1a; border: 1px solid #1a9e50; color: #4ade80; }
 .result-badge.wrong { background: #3c0d0d; border: 1px solid #9e1a1a; color: #f87171; }
 .vs-line { text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 18px; color: #4da6ff; letter-spacing: 4px; margin: 4px 0; }
+
+/* ── LOBBY WAITING ROOM ──────────────────────────────────────────────────── */
+.room-code-display { text-align: center; margin-bottom: 16px; }
+.rcd-label { font-size: 11px; letter-spacing: 2px; color: #4da6ff; text-transform: uppercase; margin-bottom: 8px; }
+.rcd-code { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 36px; letter-spacing: 4px; color: #fff; background: #020b18; border: 2px solid #2a6ed4; border-radius: 10px; padding: 10px 20px; display: inline-block; }
+.players-list { margin-bottom: 8px; }
+.pl-label { font-size: 11px; letter-spacing: 2px; color: #4da6ff; text-transform: uppercase; margin-bottom: 10px; }
+.pl-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #0d2240; }
+.pl-dot { color: #4ade80; font-size: 10px; }
+.pl-name { font-size: 14px; font-weight: 600; flex: 1; }
+.pl-crown { font-size: 11px; color: #f59e0b; }
+.pl-waiting { opacity: 0.4; }
+
+/* ── MINI SCORES ─────────────────────────────────────────────────────────── */
+.mini-scores { background: #0a1929; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px; margin-top: 16px; width: 100%; max-width: 300px; }
+
+/* ── CLUES REVEAL ────────────────────────────────────────────────────────── */
+.clues-reveal { margin-bottom: 16px; }

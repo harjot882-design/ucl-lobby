@@ -22,7 +22,7 @@ function posName(pos) {
   return { GK: 'goalkeeper', DF: 'defender', MF: 'midfielder', FW: 'forward' }[pos] || pos
 }
 
-export default function ClueEntry({ playerName, player, timerDisplay, onSubmit }) {
+export default function ClueEntry({ playerName, player, timerDisplay, showTimer = true, onSubmit }) {
   const [clues, setClues] = useState(['', '', ''])
   const [checks, setChecks] = useState([null, null, null])
 
@@ -53,10 +53,12 @@ export default function ClueEntry({ playerName, player, timerDisplay, onSubmit }
       </div>
       <div className="look-away-banner">🔒 Don't give away who you picked!</div>
 
+      {showTimer && (
       <div className="timer-bar">
         <span className="timer-label">Time to write</span>
         <span className="timer-val">{timerDisplay}</span>
       </div>
+      )}
 
       <div className="clue-list">
         {[0,1,2].map(i => (
