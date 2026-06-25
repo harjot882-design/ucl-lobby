@@ -4,13 +4,17 @@ import Game from './components/Game'
 
 export default function App() {
   const [session, setSession] = useState(null)
-
   return (
     <div className="app-root">
       <div className="hex-bg" />
       {!session
-        ? <Lobby onJoin={(room, playerId, playerName) => setSession({ room, playerId, playerName })} />
-        : <Game room={session.room} playerId={session.playerId} playerName={session.playerName} onLeave={() => setSession(null)} />
+        ? <Lobby onJoin={(roomId, playerId, playerName) => setSession({ roomId, playerId, playerName })} />
+        : <Game
+            roomId={session.roomId}
+            playerId={session.playerId}
+            playerName={session.playerName}
+            onLeave={() => setSession(null)}
+          />
       }
     </div>
   )
