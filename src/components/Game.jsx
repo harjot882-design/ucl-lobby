@@ -13,6 +13,8 @@ export default function Game({ room, playerId, playerName, onLeave }) {
   const [guessInput, setGuessInput] = useState('')
   const [dropdown, setDropdown] = useState([])
   const [qInput, setQInput] = useState('')
+  const [localQs, setLocalQs] = useState([])       // shown instantly without waiting for DB
+  const [guessResult, setGuessResult] = useState(null) // null | 'correct' | 'wrong'
   const timerRef = useRef(null)
 
   useEffect(() => {
@@ -24,6 +26,15 @@ export default function Game({ room, playerId, playerName, onLeave }) {
       .subscribe()
     return () => supabase.removeChannel(channel)
   }, [])
+
+  // Reset local state when round changes
+  useEffect(() => {
+    setLocalQs([])
+    setGuessResult(null)
+    setGuessInput('')
+    setDropdown([])
+    setQInput('')
+  }, [gs?.round, gs?.clue_giver])
 
   async function patch(updates) {
     const { data } = await supabase.from('rooms').select('game_state').eq('id', room.id).single()
@@ -53,14 +64,9 @@ export default function Game({ room, playerId, playerName, onLeave }) {
     const { data } = await supabase.from('rooms').select('game_state').eq('id', room.id).single()
     const fresh = data?.game_state || {}
     if (fresh.phase !== 'guessing') return
-    // Time's up — give points to clue giver if nobody got it
-    const players = fresh.players || []
-    const guesses = fresh.guesses || {}
-    const anyCorrect = Object.values(guesses).some(g => g.correct)
-    let newScores = { ...fresh.scores }
-    if (!anyCorrect) {
-      newScores[fresh.clue_giver] = (newScores[fresh.clue_giver] || 0) + 4
-    }
+    const anyCorrect = Object.values(fresh.guesses || {}).some(g => g.correct)
+    let newScores = { ...(fresh.scores || {}) }
+    if (!anyCorrect) newScores[fresh.clue_giver] = (newScores[fresh.clue_giver] || 0) + 4
     await advanceRound(fresh, newScores)
   }
 
@@ -68,12 +74,10 @@ export default function Game({ room, playerId, playerName, onLeave }) {
     const players = currentGs.players
     const nextIdx = (currentGs.round_clue_giver_idx || 0) + 1
     if (nextIdx >= players.length) {
-      // Game over
       await supabase.from('rooms').update({
         game_state: { ...currentGs, phase: 'game_over', scores: newScores }
       }).eq('id', room.id)
     } else {
-      // Next round
       const nextCgId = currentGs.clue_giver_order[nextIdx]
       await supabase.from('rooms').update({
         game_state: {
@@ -95,25 +99,22 @@ export default function Game({ room, playerId, playerName, onLeave }) {
   if (!gs) return <Screen><Center><div className="wait-title">Loading...</div></Center></Screen>
 
   const players = gs.players || []
-  const myPlayer = players.find(p => p.id === playerId)
   const isClueGiver = gs.clue_giver === playerId
   const clueGiverPlayer = players.find(p => p.id === gs.clue_giver)
   const clueGiverName = clueGiverPlayer?.name || 'Someone'
 
-  // ── PICKING ──────────────────────────────────────────────────────────────
+  // ── PICKING ───────────────────────────────────────────────────────────────
   if (gs.phase === 'picking') {
-    if (!isClueGiver) {
-      return (
-        <Screen>
-          <Center>
-            <div className="big-emoji">👀</div>
-            <div className="wait-title">{clueGiverName} is picking a player...</div>
-            <div className="wait-sub">Get ready to guess!</div>
-            <Scores players={players} scores={gs.scores} round={gs.round} total={gs.total_rounds} />
-          </Center>
-        </Screen>
-      )
-    }
+    if (!isClueGiver) return (
+      <Screen>
+        <Center>
+          <div className="big-emoji">👀</div>
+          <div className="wait-title">{clueGiverName} is picking a player...</div>
+          <div className="wait-sub">Get ready to guess!</div>
+          <Scores players={players} scores={gs.scores} round={gs.round} total={gs.total_rounds} />
+        </Center>
+      </Screen>
+    )
     return (
       <Screen>
         <PlayerPicker playerName={playerName} onConfirm={async (player) => {
@@ -123,26 +124,21 @@ export default function Game({ room, playerId, playerName, onLeave }) {
     )
   }
 
-  // ── WRITING CLUES ────────────────────────────────────────────────────────
+  // ── WRITING CLUES ──────────────────────────────────────────────────────────
   if (gs.phase === 'writing_clues') {
-    if (!isClueGiver) {
-      return (
-        <Screen>
-          <Center>
-            <div className="big-emoji">✍️</div>
-            <div className="wait-title">{clueGiverName} is writing clues...</div>
-            <div className="wait-sub">Sit tight — get ready to guess!</div>
-            <Scores players={players} scores={gs.scores} round={gs.round} total={gs.total_rounds} />
-          </Center>
-        </Screen>
-      )
-    }
+    if (!isClueGiver) return (
+      <Screen>
+        <Center>
+          <div className="big-emoji">✍️</div>
+          <div className="wait-title">{clueGiverName} is writing clues...</div>
+          <div className="wait-sub">Sit tight — get ready to guess!</div>
+          <Scores players={players} scores={gs.scores} round={gs.round} total={gs.total_rounds} />
+        </Center>
+      </Screen>
+    )
     return (
       <Screen>
-        <ClueEntry
-          playerName={playerName}
-          player={gs.picked_player}
-          showTimer={false}
+        <ClueEntry playerName={playerName} player={gs.picked_player} showTimer={false}
           onSubmit={async (clues) => {
             await patch({ clues, phase: 'guessing', timer_end: Date.now() + TIMER_MS, guesses: {}, questions: {} })
           }}
@@ -151,13 +147,13 @@ export default function Game({ room, playerId, playerName, onLeave }) {
     )
   }
 
-  // ── GUESSING ─────────────────────────────────────────────────────────────
+  // ── GUESSING ───────────────────────────────────────────────────────────────
   if (gs.phase === 'guessing') {
     const clues = gs.clues || []
     const myGuessData = (gs.guesses || {})[playerId] || { guesses_left: 2, correct: false, done: false, questions_left: 3, questions_used: 0 }
-    const myQuestions = (gs.questions || {})[playerId] || []
     const timerSecs = Math.max(0, Math.round(((gs.timer_end || 0) - Date.now()) / 1000))
 
+    // Clue giver sees live scoreboard
     if (isClueGiver) {
       const guesses = gs.guesses || {}
       const guessers = players.filter(p => p.id !== playerId)
@@ -172,7 +168,7 @@ export default function Game({ room, playerId, playerName, onLeave }) {
             <span className="timer-label">Time left</span>
             <span className={`timer-val ${timerSecs < 60 ? 'danger' : timerSecs < 120 ? 'warning' : ''}`}>{timerDisplay}</span>
           </div>
-          <div className="clues-reveal">
+          <div className="section">
             <div className="section-label">Your clues</div>
             {clues.map((c, i) => <div key={i} className="clue-card revealed"><span>💡</span><span className="clue-text">{c}</span></div>)}
           </div>
@@ -189,21 +185,27 @@ export default function Game({ room, playerId, playerName, onLeave }) {
             })}
           </div>
           <div className="section">
-            <div className="section-label">The player was</div>
-            <div className="result-player" style={{textAlign:'center'}}>{gs.picked_player?.flag} {gs.picked_player?.name}</div>
+            <div className="section-label">The player is</div>
+            <div style={{textAlign:'center',fontSize:20,fontWeight:700,padding:'10px 0'}}>{gs.picked_player?.flag} {gs.picked_player?.name}</div>
           </div>
         </Screen>
       )
     }
 
+    // Guesser is done — show result and wait
     if (myGuessData.done) {
       return (
         <Screen>
           <Center>
             <div className="big-emoji">{myGuessData.correct ? '🎯' : '😔'}</div>
-            <div className="wait-title">{myGuessData.correct ? 'You got it!' : 'Better luck next round!'}</div>
-            <div className="wait-sub">Waiting for others to finish...</div>
-            <div className="timer-bar" style={{marginTop:16}}>
+            <div className="wait-title" style={{color: myGuessData.correct ? '#4ade80' : '#f87171'}}>
+              {myGuessData.correct ? 'Correct! Well done!' : 'Incorrect — better luck next round!'}
+            </div>
+            {!myGuessData.correct && (
+              <div className="wait-sub">The player was <strong>{gs.picked_player?.name}</strong></div>
+            )}
+            <div className="wait-sub" style={{marginTop:8}}>Waiting for others to finish...</div>
+            <div className="timer-bar" style={{marginTop:16,width:'100%',maxWidth:300}}>
               <span className="timer-label">Time left</span>
               <span className={`timer-val ${timerSecs < 60 ? 'danger' : timerSecs < 120 ? 'warning' : ''}`}>{timerDisplay}</span>
             </div>
@@ -221,14 +223,17 @@ export default function Game({ room, playerId, playerName, onLeave }) {
     async function askQuestion() {
       if (!qInput.trim() || myGuessData.questions_left <= 0) return
       const answer = autoAnswer(qInput.toLowerCase(), gs.picked_player)
-      const newQs = [...myQuestions, { q: qInput, a: answer }]
+      const newQ = { q: qInput, a: answer }
+      const newLocalQs = [...localQs, newQ]
+      setLocalQs(newLocalQs)  // Show instantly
+      setQInput('')
       const newQLeft = myGuessData.questions_left - 1
       const newGuessData = { ...myGuessData, questions_left: newQLeft, questions_used: (myGuessData.questions_used || 0) + 1 }
+      const newAllQuestions = { ...(gs.questions || {}), [playerId]: newLocalQs }
       await patch({
-        [`questions.${playerId}`]: newQs,
+        questions: newAllQuestions,
         guesses: { ...(gs.guesses || {}), [playerId]: newGuessData }
       })
-      setQInput('')
     }
 
     async function submitGuess() {
@@ -238,19 +243,19 @@ export default function Game({ room, playerId, playerName, onLeave }) {
       const guessesLeft = myGuessData.guesses_left - 1
       const questionsUsed = myGuessData.questions_used || 0
 
+      // Show instant feedback
+      setGuessResult(correct ? 'correct' : guessesLeft <= 0 ? 'wrong' : 'wrong_still_guessing')
+
       let points = 0
       if (correct) {
-        if (myGuessData.guesses_left === 2 && questionsUsed === 0) points = 5 // first guess no questions
-        else if (myGuessData.guesses_left === 2) points = 5 // first guess
-        else if (questionsUsed >= 3) points = 2 // correct but used all questions
-        else points = 3 // second guess
+        if (myGuessData.guesses_left === 2) points = questionsUsed >= 3 ? 2 : 5
+        else points = questionsUsed >= 3 ? 2 : 3
       }
 
       const newGuessData = { ...myGuessData, guesses_left: guessesLeft, correct, done: correct || guessesLeft <= 0 }
       const newScores = correct ? { ...gs.scores, [playerId]: (gs.scores?.[playerId] || 0) + points } : gs.scores
       const newAllGuesses = { ...(gs.guesses || {}), [playerId]: newGuessData }
 
-      // Check if all guessers are done
       const guessers = players.filter(p => p.id !== gs.clue_giver)
       const allDone = guessers.every(p => p.id === playerId ? newGuessData.done : newAllGuesses[p.id]?.done)
 
@@ -262,8 +267,11 @@ export default function Game({ room, playerId, playerName, onLeave }) {
         await advanceRound({ ...(data?.game_state || {}), guesses: newAllGuesses, scores: finalScores }, finalScores)
       } else {
         await patch({ guesses: newAllGuesses, scores: newScores })
-        setGuessInput('')
-        setDropdown([])
+        if (!correct && guessesLeft > 0) {
+          setGuessInput('')
+          setDropdown([])
+          setTimeout(() => setGuessResult(null), 1500) // Clear wrong feedback after 1.5s
+        }
       }
     }
 
@@ -277,13 +285,20 @@ export default function Game({ room, playerId, playerName, onLeave }) {
           <span className="timer-label">Time</span>
           <span className={`timer-val ${timerSecs < 60 ? 'danger' : timerSecs < 120 ? 'warning' : ''}`}>{timerDisplay}</span>
         </div>
+
+        {/* Guess result flash */}
+        {guessResult === 'wrong_still_guessing' && (
+          <div className="guess-flash wrong">❌ Wrong guess! You have {myGuessData.guesses_left - 1} guess left</div>
+        )}
+
         <div className="section">
           <div className="section-label">Clues from {clueGiverName}</div>
           {clues.map((c, i) => <div key={i} className="clue-card revealed"><span>💡</span><span className="clue-text">{c}</span></div>)}
         </div>
+
         <div className="section">
           <div className="section-label">Your Yes/No Questions — {myGuessData.questions_left} left</div>
-          {myQuestions.map((qa, i) => (
+          {localQs.map((qa, i) => (
             <div key={i} className="qa-row">
               <span>{qa.q}</span>
               <span className={qa.a ? 'yes' : 'no'}>{qa.a ? 'YES ✅' : 'NO ❌'}</span>
@@ -296,6 +311,7 @@ export default function Game({ room, playerId, playerName, onLeave }) {
             </div>
           )}
         </div>
+
         <div className="section">
           <div className="section-label">Your Guesses — {myGuessData.guesses_left} left</div>
           <div className="guess-wrap">
@@ -316,10 +332,18 @@ export default function Game({ room, playerId, playerName, onLeave }) {
     )
   }
 
-  // ── GAME OVER ─────────────────────────────────────────────────────────────
+  // ── GAME OVER ──────────────────────────────────────────────────────────────
   if (gs.phase === 'game_over') {
     const sorted = [...players].sort((a, b) => (gs.scores?.[b.id] || 0) - (gs.scores?.[a.id] || 0))
     const winner = sorted[0]
+
+    async function playAgain() {
+      const resetPlayers = players.map(p => ({ ...p, score: 0 }))
+      const newGs = { phase: 'lobby', players: resetPlayers }
+      await supabase.from('rooms').update({ game_state: newGs, status: 'waiting' }).eq('id', room.id)
+      onLeave()
+    }
+
     return (
       <Screen>
         <div className="results-headline">🏆 Game Over!</div>
@@ -332,12 +356,13 @@ export default function Game({ room, playerId, playerName, onLeave }) {
           <div className="section-label">Final Scores</div>
           {sorted.map((p, i) => (
             <div key={p.id} className="qa-row">
-              <span>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  '} {p.name}</span>
+              <span>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '   '} {p.name}</span>
               <span className="yes">{gs.scores?.[p.id] || 0} pts</span>
             </div>
           ))}
         </div>
-        <button className="btn-primary" onClick={onLeave} style={{ marginTop: 16 }}>Back to Lobby</button>
+        <button className="btn-primary" onClick={playAgain} style={{ marginTop: 16 }}>🔄 Play Again</button>
+        <button className="btn-secondary" onClick={onLeave} style={{ marginTop: 8 }}>Leave Game</button>
       </Screen>
     )
   }
