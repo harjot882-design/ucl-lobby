@@ -1,50 +1,120 @@
-import { useState } from 'react'
-import { PLAYERS } from '../data/players'
+// PlayerPicker.jsx
+// Replaces the simple <select> in Game.jsx for picking the secret player
+// Shows: League tabs → Team grid → Player list
 
-export default function PlayerPicker({ playerName, onConfirm }) {
-  const [search, setSearch] = useState('')
-  const [posFilter, setPosFilter] = useState('ALL')
-  const [selected, setSelected] = useState(null)
+import { useState } from "react";
+import { PLAYER_DATABASE, LEAGUES, getTeams, getPlayers } from "../lib/playerDatabase";
 
-  const filtered = PLAYERS.filter(p => {
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.club.toLowerCase().includes(search.toLowerCase()) || p.nation.toLowerCase().includes(search.toLowerCase())
-    const matchPos = posFilter === 'ALL' || p.pos === posFilter
-    return matchSearch && matchPos
-  })
+const LEAGUE_FLAGS = {
+  "Premier League": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  "La Liga": "🇪🇸",
+  "Bundesliga": "🇩🇪",
+  "Serie A": "🇮🇹",
+  "Ligue 1": "🇫🇷",
+};
 
+export default function PlayerPicker({ onSelect }) {
+  const [selectedLeague, setSelectedLeague] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [search, setSearch] = useState("");
+
+  const handleLeague = (league) => {
+    setSelectedLeague(league);
+    setSelectedTeam(null);
+    setSearch("");
+  };
+
+  const handleTeam = (team) => {
+    setSelectedTeam(team);
+    setSearch("");
+  };
+
+  const handleBack = () => {
+    if (selectedTeam) {
+      setSelectedTeam(null);
+    } else {
+      setSelectedLeague(null);
+    }
+    setSearch("");
+  };
+
+  // Search across all players
+  const searchResults = search.length > 1
+    ? Object.entries(PLAYER_DATABASE).flatMap(([league, teams]) =>
+        Object.entries(teams).flatMap(([team, players]) =>
+          players
+            .filter(p => p.toLowerCase().includes(search.toLowerCase()))
+            .map(p => ({ player: p, team, league }))
+        )
+      )
+    : [];
+
+  // ── Search view ──────────────────────────────────────────────────────────
   return (
-    <div className="picker-screen">
-      <div className="phase-header">
-        <div className="phase-label">{playerName}'s turn</div>
-        <div className="phase-title">Choose Your Player</div>
-      </div>
-      <div className="look-away-banner">🔒 Other player — look away!</div>
-
-      <div className="search-bar">
-        <span className="search-icon">🔍</span>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search player, club or nation..." />
-      </div>
-
-      <div className="pos-tabs">
-        {['ALL','GK','DF','MF','FW'].map(pos => (
-          <button key={pos} className={`pos-tab ${posFilter === pos ? 'active' : ''}`} onClick={() => setPosFilter(pos)}>{pos}</button>
-        ))}
+    <div className="picker-container">
+      {/* Search bar always visible */}
+      <div className="picker-search">
+        <input
+          className="clue-input"
+          placeholder="🔍 Search any player…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
-      <div className="player-grid">
-        {filtered.map(p => (
-          <div key={p.name} className={`player-card ${selected?.name === p.name ? 'selected' : ''}`} onClick={() => setSelected(p)}>
-            <div className="p-flag">{p.flag}</div>
-            <div className="p-name">{p.name}</div>
-            <div className="p-club">{p.club}</div>
-            <div className="p-apps">{p.ucl_apps} UCL apps</div>
+      {search.length > 1 ? (
+        <div className="picker-list">
+          {searchResults.length === 0
+            ? <p className="hint">No players found</p>
+            : searchResults.map(({ player, team, league }) => (
+              <button key={player} className="picker-player-btn" onClick={() => onSelect(player)}>
+                <span className="player-name">{player}</span>
+                <span className="player-meta">{LEAGUE_FLAGS[league]} {team}</span>
+              </button>
+            ))
+          }
+        </div>
+      ) : !selectedLeague ? (
+        /* ── League selection ─────────────────────────────────────────── */
+        <div>
+          <p className="picker-label">Select a league</p>
+          <div className="picker-league-grid">
+            {LEAGUES.map(league => (
+              <button key={league} className="picker-league-btn" onClick={() => handleLeague(league)}>
+                <span className="league-flag">{LEAGUE_FLAGS[league]}</span>
+                <span className="league-name">{league}</span>
+                <span className="league-count">{getTeams(league).length} clubs</span>
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <button className="btn-primary" onClick={() => selected && onConfirm(selected)} disabled={!selected} style={{ marginTop: 12 }}>
-        Lock In — {selected ? selected.name : 'pick a player'}
-      </button>
+        </div>
+      ) : !selectedTeam ? (
+        /* ── Team selection ───────────────────────────────────────────── */
+        <div>
+          <button className="picker-back" onClick={handleBack}>← Back</button>
+          <p className="picker-label">{LEAGUE_FLAGS[selectedLeague]} {selectedLeague} — pick a team</p>
+          <div className="picker-team-grid">
+            {getTeams(selectedLeague).map(team => (
+              <button key={team} className="picker-team-btn" onClick={() => handleTeam(team)}>
+                {team}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* ── Player selection ─────────────────────────────────────────── */
+        <div>
+          <button className="picker-back" onClick={handleBack}>← Back to teams</button>
+          <p className="picker-label">{selectedTeam} — pick the secret player</p>
+          <div className="picker-list">
+            {getPlayers(selectedLeague, selectedTeam).map(player => (
+              <button key={player} className="picker-player-btn" onClick={() => onSelect(player)}>
+                <span className="player-name">{player}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
