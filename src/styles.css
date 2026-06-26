@@ -20,7 +20,7 @@ body {
   z-index: 0;
 }
 
-/* ── LOBBY ──────────────────────────────────────────────────────────────── */
+/* ── LOBBY ──────────────────────────────────────────────────────────────────── */
 .lobby {
   position: relative;
   z-index: 1;
@@ -120,7 +120,7 @@ body {
 
 .hint { font-size: 12px; color: #666; text-align: center; margin-top: 10px; }
 
-/* ── GAME SCREEN ─────────────────────────────────────────────────────────── */
+/* ── GAME SCREEN ──────────────────────────────────────────────────────────── */
 .game-screen {
   position: relative;
   z-index: 1;
@@ -156,7 +156,7 @@ body {
 .picked-badge { background: #0a1929; border: 1px solid #1e3a5f; border-radius: 8px; padding: 10px 20px; font-size: 14px; color: #4da6ff; }
 .timer-display { font-family: 'Barlow Condensed', sans-serif; font-size: 40px; font-weight: 700; color: #4da6ff; letter-spacing: 4px; }
 
-/* ── PHASE HEADER ────────────────────────────────────────────────────────── */
+/* ── PHASE HEADER ─────────────────────────────────────────────────────────── */
 .phase-header { text-align: center; margin-bottom: 14px; padding-top: 8px; }
 .phase-label { font-size: 11px; letter-spacing: 3px; color: #4da6ff; text-transform: uppercase; margin-bottom: 4px; }
 .phase-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; text-transform: uppercase; }
@@ -187,68 +187,7 @@ body {
 .timer-val.warning { color: #f59e0b; }
 .timer-val.danger { color: #ef4444; }
 
-/* ── PLAYER PICKER ───────────────────────────────────────────────────────── */
-.picker-screen { padding-top: 8px; }
-
-.search-bar {
-  position: relative;
-  margin-bottom: 10px;
-}
-.search-bar input {
-  width: 100%;
-  background: #0a1929;
-  border: 1px solid #1e3a5f;
-  border-radius: 6px;
-  color: #fff;
-  padding: 10px 12px 10px 34px;
-  font-size: 14px;
-  font-family: 'Barlow', sans-serif;
-}
-.search-bar input:focus { outline: none; border-color: #4da6ff; }
-.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; }
-
-.pos-tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-.pos-tab {
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid #1e3a5f;
-  background: transparent;
-  color: #aaa;
-  font-size: 12px;
-  font-family: 'Barlow', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.pos-tab.active, .pos-tab:hover { border-color: #4da6ff; color: #4da6ff; background: #0a1929; }
-
-.player-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-  gap: 8px;
-  max-height: 320px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.player-grid::-webkit-scrollbar { width: 4px; }
-.player-grid::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
-
-.player-card {
-  background: #0a1929;
-  border: 1px solid #1e3a5f;
-  border-radius: 8px;
-  padding: 10px 6px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.player-card:hover { border-color: #4da6ff; }
-.player-card.selected { border-color: #4da6ff; background: #0d2240; box-shadow: 0 0 10px #4da6ff22; }
-.p-flag { font-size: 18px; }
-.p-name { font-size: 10px; font-weight: 600; line-height: 1.2; margin-top: 2px; }
-.p-club { font-size: 9px; color: #4da6ff; margin-top: 2px; }
-.p-apps { font-size: 9px; color: #555; }
-
-/* ── CLUE ENTRY ──────────────────────────────────────────────────────────── */
+/* ── CLUE ENTRY ───────────────────────────────────────────────────────────── */
 .clue-screen { padding-top: 8px; }
 .clue-list { display: flex; flex-direction: column; gap: 4px; }
 .clue-row { display: flex; align-items: center; gap: 8px; }
@@ -264,29 +203,8 @@ body {
   font-family: 'Barlow', sans-serif;
 }
 .clue-input:focus { outline: none; border-color: #4da6ff; }
-.clue-status { width: 16px; font-size: 12px; flex-shrink: 0; }
-.clue-feedback {
-  background: #1a1200;
-  border: 1px solid #f59e0b33;
-  border-radius: 4px;
-  color: #f59e0b;
-  font-size: 11px;
-  padding: 5px 10px 5px 30px;
-  margin-top: 2px;
-  margin-bottom: 4px;
-}
-.fix-btn {
-  background: #0d3c1a;
-  border: 1px solid #1a9e50;
-  border-radius: 4px;
-  color: #4ade80;
-  font-size: 10px;
-  padding: 2px 6px;
-  cursor: pointer;
-  margin-left: 6px;
-}
 
-/* ── GUESSING ────────────────────────────────────────────────────────────── */
+/* ── GUESSING ─────────────────────────────────────────────────────────────── */
 .section { margin-bottom: 16px; }
 .section-label { font-size: 11px; letter-spacing: 2px; color: #4da6ff; text-transform: uppercase; margin-bottom: 8px; }
 
@@ -298,14 +216,10 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
   margin-bottom: 6px;
-  transition: all 0.2s;
 }
 .clue-card.revealed { border-color: #2a4a7f; }
-.clue-card.locked { opacity: 0.7; }
 .clue-text { font-size: 13px; flex: 1; }
-.tap-hint { font-size: 10px; color: #555; }
 
 .qa-row {
   display: flex;
@@ -344,6 +258,7 @@ body {
   cursor: pointer;
   white-space: nowrap;
 }
+.btn-ask:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .guess-wrap { position: relative; }
 .guess-input {
@@ -357,32 +272,8 @@ body {
   font-family: 'Barlow', sans-serif;
 }
 .guess-input:focus { outline: none; border-color: #4da6ff; }
-.dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0; right: 0;
-  background: #0d2240;
-  border: 1px solid #2a6ed4;
-  border-top: none;
-  border-radius: 0 0 6px 6px;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 100;
-}
-.dd-item { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #1e3a5f; }
-.dd-item:hover { background: #1a3a7a; }
-.dd-club { color: #4da6ff; font-size: 11px; margin-left: 6px; }
 
-/* ── RESULTS ─────────────────────────────────────────────────────────────── */
-.results-headline {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900;
-  font-size: 28px;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 16px 0;
-}
+/* ── RESULTS ──────────────────────────────────────────────────────────────── */
 .result-card {
   background: #0a1929;
   border: 1px solid #1e3a5f;
@@ -393,20 +284,8 @@ body {
 }
 .result-label { font-size: 11px; letter-spacing: 2px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
 .result-player { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; text-transform: uppercase; }
-.result-info { font-size: 12px; color: #aaa; margin: 4px 0; }
-.result-badge {
-  display: inline-block;
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-top: 6px;
-}
-.result-badge.correct { background: #0d3c1a; border: 1px solid #1a9e50; color: #4ade80; }
-.result-badge.wrong { background: #3c0d0d; border: 1px solid #9e1a1a; color: #f87171; }
-.vs-line { text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 18px; color: #4da6ff; letter-spacing: 4px; margin: 4px 0; }
 
-/* ── LOBBY WAITING ROOM ──────────────────────────────────────────────────── */
+/* ── LOBBY WAITING ROOM ───────────────────────────────────────────────────── */
 .room-code-display { text-align: center; margin-bottom: 16px; }
 .rcd-label { font-size: 11px; letter-spacing: 2px; color: #4da6ff; text-transform: uppercase; margin-bottom: 8px; }
 .rcd-code { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 36px; letter-spacing: 4px; color: #fff; background: #020b18; border: 2px solid #2a6ed4; border-radius: 10px; padding: 10px 20px; display: inline-block; }
@@ -418,13 +297,10 @@ body {
 .pl-crown { font-size: 11px; color: #f59e0b; }
 .pl-waiting { opacity: 0.4; }
 
-/* ── MINI SCORES ─────────────────────────────────────────────────────────── */
+/* ── MINI SCORES ──────────────────────────────────────────────────────────── */
 .mini-scores { background: #0a1929; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px; margin-top: 16px; width: 100%; max-width: 300px; }
 
-/* ── CLUES REVEAL ────────────────────────────────────────────────────────── */
-.clues-reveal { margin-bottom: 16px; }
-
-/* ── GUESS FLASH ─────────────────────────────────────────────────────────── */
+/* ── GUESS FLASH ──────────────────────────────────────────────────────────── */
 .guess-flash {
   border-radius: 8px;
   padding: 10px 14px;
@@ -437,3 +313,153 @@ body {
 .guess-flash.wrong { background: #3c0d0d; border: 1px solid #9e1a1a; color: #f87171; }
 .guess-flash.correct { background: #0d3c1a; border: 1px solid #1a9e50; color: #4ade80; }
 @keyframes flashIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── PLAYER PICKER ────────────────────────────────────────────────────────── */
+.picker-wrap { padding-top: 4px; }
+
+.picker-search-bar {
+  position: relative;
+  margin-bottom: 14px;
+}
+.picker-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+.picker-search-input {
+  width: 100%;
+  background: #0a1929;
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  color: #fff;
+  padding: 10px 12px 10px 34px;
+  font-size: 14px;
+  font-family: 'Barlow', sans-serif;
+}
+.picker-search-input:focus { outline: none; border-color: #4da6ff; }
+.picker-search-input::placeholder { color: #555; }
+
+.picker-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #4da6ff;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.picker-back-btn {
+  background: none;
+  border: none;
+  color: #4da6ff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 0 10px;
+  display: block;
+  font-family: 'Barlow', sans-serif;
+}
+.picker-back-btn:hover { text-decoration: underline; }
+
+.picker-empty {
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.picker-league-list { display: flex; flex-direction: column; gap: 8px; }
+.picker-league-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: #0a1929;
+  border: 1px solid #1e3a5f;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+}
+.picker-league-btn:hover { border-color: #2a6ed4; background: #0d2240; }
+.picker-league-flag { font-size: 20px; }
+.picker-league-name {
+  flex: 1;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+}
+.picker-league-count { font-size: 11px; color: #4da6ff; }
+
+.picker-team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.picker-team-btn {
+  padding: 11px 10px;
+  background: #0a1929;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+  font-family: 'Barlow', sans-serif;
+}
+.picker-team-btn:hover { border-color: #2a6ed4; background: #0d2240; }
+
+.picker-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.picker-player-list::-webkit-scrollbar { width: 4px; }
+.picker-player-list::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
+
+.picker-player-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 13px;
+  background: #0a1929;
+  border: 1px solid #1e3a5f;
+  border-radius: 7px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+  font-family: 'Barlow', sans-serif;
+}
+.picker-player-btn:hover { border-color: #1a9e50; background: #0d2c18; }
+.picker-player-name { font-size: 13px; font-weight: 600; color: #fff; }
+.picker-player-meta { font-size: 11px; color: #4da6ff; }
+
+.picker-selected-banner {
+  background: #0d3c1a;
+  border: 1px solid #1a9e50;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.picker-selected-banner strong { color: #fff; }
+.picker-change-btn {
+  background: none;
+  border: 1px solid #1a9e50;
+  border-radius: 4px;
+  color: #4ade80;
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+}
